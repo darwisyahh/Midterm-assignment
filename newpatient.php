@@ -14,9 +14,27 @@ if (isset($_POST["submit"])) {
     $email = $_POST["email"];
     $sqlregpatient = "INSERT INTO `tbl_patients`(`patient_ic`, `patient_email`, `patient_name`, `patient_phone`, `patient_address`) 
     VALUES ('$icno','$email ','$name','$phoneno','$address')";
-    $conn->query($sqlregpatient);
-    echo "<script>alert('New patient added')</script>";
+    try{
+        $conn->query($sqlregpatient);
+        $patientid = $conn->lastInsertId();
+        if (file_exists($_FILES["fileToUpload"]["tmp_name"]) || is_uploaded_file($_FILES["fileToUpload"]["tmp_name"])) 
+        {
+            uploadImage($patientid);
+        }
+    }catch (PDOException $e) {
+        echo $e->getMessage();
+    }
+    
+    echo "<script>alert('New Patient Added')</script>";
 }
+
+function uploadImage($id)
+{
+    $target_dir = "assets/";
+    $target_file = $target_dir . $id . ".png";
+    move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file);
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -57,11 +75,11 @@ if (isset($_POST["submit"])) {
 </head>
 
 <body>
-    <div class="w3-header w3-container w3-teal w3-padding-28 w3-center">
+    <div class="w3-header w3-container w3-pale-red w3-padding-28 w3-center">
         <h1 style="font-size:calc(8px + 4vw);">MYCLINIC</h1>
         <p style="font-size:calc(8px + 1vw);;">We serve the people</p>
     </div>
-    <div class="w3-bar w3-blue-gray">
+    <div class="w3-bar w3-pink">
         <a href="index.php" class="w3-bar-item w3-button w3-right">Back</a>
     </div>
     <div style="min-height:100vh;overflow-y: auto;">
@@ -71,7 +89,11 @@ if (isset($_POST["submit"])) {
                 <form class="w3-container w3-padding w3-margin" action="newpatient.php" enctype="multipart/form-data"
                     method="POST" onsubmit="return confirmDialog()" >
                     <h3 class="w3-center">Register New Patient</h3>
-                    
+                    <div class="w3-container w3-border w3-center w3-padding">
+                        <img class="w3-image" src="assets/profile.png" style="max-width:40%"><br>
+                        <input type="file" name="fileToUpload" id="fileToUpload" onchange="previewFile()"
+                            accept="image/png" required><br>
+                    </div>
                     <label>Patient Name</label>
                     <input class="w3-input w3-border w3-round" type="text" name="name" placeholder="Patient Name"
                         required><br>
@@ -88,13 +110,13 @@ if (isset($_POST["submit"])) {
                     <textarea class="w3-input w3-border w3-round" name="address" placeholder="Address" rows="5"
                         required></textarea>
                     <br>
-                    <input class="w3-button w3-round w3-teal" type="submit" name="submit" value="Submit">
+                    <input class="w3-button w3-round w3-pale-red" type="submit" name="submit" value="Submit">
 
                 </form>
             </div>
         </div>
     </div>
-    <footer class="w3-footer w3-center w3-blue-grey">
+    <footer class="w3-footer w3-center w3-pink">
         <p>Clinic</p>
     </footer>
 
